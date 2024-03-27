@@ -15,6 +15,12 @@ struct Venda {
     float desconto;
 };
 
+enum Operacoes {
+    REGISTRAR_VENDA = 1,
+    GERAR_RELATORIO,
+    FINALIZAR
+};
+
 void imprimirVenda(struct Venda venda);
 float calcular_preco_total_com_desconto(struct Venda venda); 
 
@@ -95,6 +101,18 @@ float calcular_preco_total_com_desconto(struct Venda venda) {
     return preco_total;
 }
 
+void gerar_relatorio(struct Venda* vendas, int num_vendas) {
+    printf("\nRelatório de Vendas:\n\n");
+    printf("%-10s%-20s%-15s%-15s%-15s%-15s\n", "Código", "Nome do Produto", "Marca", "Qtd. Itens", "Preço (U)", "Preço Total");
+    
+    for (int i = 0; i < num_vendas; ++i) {
+        printf("%-10d%-20s%-15s%-15d%-15d%-15.2f\n", vendas[i].codigo, vendas[i].nome_produto, vendas[i].marca, vendas[i].qtd_itens, vendas[i].preco_unitario, vendas[i].preco_total);
+    }
+    printf("\nPressione qualquer tecla para voltar ao menu...\n");
+    getchar(); // Limpa o buffer de entrada
+    getchar(); // Aguarda a entrada de uma tecla
+}
+
 int main() {
     setlocale(LC_ALL, "Portuguese");
 
@@ -103,30 +121,36 @@ int main() {
     struct Venda vendas[100]; 
     int num_vendas = 0;
 
-    int opcao;
+    enum Operacoes operacoes;
 
     do {
         printf("\nMenu:\n");
         printf("1. Cadastrar nova venda\n");
-        printf("2. Finalizar venda\n");
-        printf("3. Calcular preços\n");
-        printf("4. Gerar relatórios\n");
+        printf("2. Gerar relatórios\n");
+        // printf("3. Calcular preços\n");
+        printf("3. Finalizar venda\n");
         printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
+        scanf("%u", &operacoes);
 
-        switch (opcao) {
+        switch (operacoes) {
             case 1:
                 system("CLS");
                 registrar_Vendas(vendas, &num_vendas);
                 system("CLS");
                 break;
+
             case 2:
+                system("CLS");
+                gerar_relatorio(vendas, num_vendas);
+                system("CLS");
+
+            case 3:
                 printf("\nFinalizando o programa.\n");
                 break;
             default:
                 printf("\nOpção inválida. Escolha novamente.\n");
         }
-    } while (opcao != 2);
+    } while (operacoes != 3);
 
     return 0;
 }
