@@ -35,7 +35,7 @@ enum Operacoes {
 
 void imprimirVenda(struct Venda venda);
 float calcular_preco_total_com_desconto(struct Venda venda);
-void RegistrarCliente(struct Cliente *clientes, int *num_clientes);
+void RegistrarCliente(FILE* arquivo);
 
 // Função titulo
 void titulo() {
@@ -50,7 +50,15 @@ void titulo() {
     printf("|-----------------------------------|\n\n");
 }
 
-struct Cliente* buscarClientePorCodigo(struct Cliente* clientes, int codigo) {
+void escrever_venda(struct Venda venda, FILE *arquivo) {
+    fwrite(&venda, sizeof(struct Venda), 1, arquivo);
+}
+
+void escrever_cliente(struct Cliente cliente, FILE *arquivo) {
+    fwrite(&cliente, sizeof(struct Cliente), 1, arquivo);
+}
+
+/*struct Cliente* buscarClientePorCodigo(struct Cliente* clientes, int codigo) {
     int size = sizeof(clientes);
     for (int i = 0; i < size; i++) {
         if (clientes[i].codigo == codigo) {
@@ -58,9 +66,24 @@ struct Cliente* buscarClientePorCodigo(struct Cliente* clientes, int codigo) {
         }
     }
     return NULL;
+}*/
+
+struct Cliente* buscarClientePorCodigo(int codigo, FILE* arquivo_vendas) {
+    struct Cliente cliente;
+
+    // Ler cada cliente do arquivo
+    while (fread(&cliente, sizeof(struct Cliente), 1, arquivo_vendas) == 1) {
+        if (cliente.codigo == codigo) {
+            struct Cliente* cliente_encontrado = (struct Cliente*)malloc(sizeof(struct Cliente));
+            *cliente_encontrado = cliente;
+            return cliente_encontrado;
+        }
+    }
+
+    return NULL;
 }
 
-void registrar_Vendas(struct Venda *vendas, struct Cliente *clientes, int *num_vendas) {
+void registrar_Vendas(FILE* arquivo_clientes, FILE* arquivo_vendas) {
     struct Venda nova_venda;
 
     int opcao;
@@ -73,7 +96,7 @@ void registrar_Vendas(struct Venda *vendas, struct Cliente *clientes, int *num_v
         int codigo_cliente;
         scanf("%d", &codigo_cliente);
 
-        cliente_encontrado = buscarClientePorCodigo(clientes, codigo_cliente);
+        cliente_encontrado = buscarClientePorCodigo(codigo_cliente, arquivo_clientes);
 
         if (cliente_encontrado == NULL) {
             printf("Cliente não cadastrado! Escolha uma das opções abaixo:\n\n");
@@ -121,8 +144,7 @@ void registrar_Vendas(struct Venda *vendas, struct Cliente *clientes, int *num_v
 
         if (strcmp(resposta, "sim") == 0) {
             imprimirVenda(nova_venda);
-            vendas[*num_vendas] = nova_venda;
-            (*num_vendas)++;
+            escrever_venda(nova_venda, arquivo_vendas);
             printf("Venda registrada com sucesso!\n");
         }
         else {
@@ -152,7 +174,8 @@ float calcular_preco_total_com_desconto(struct Venda venda) {
 
     return preco_total;
 }
-void RegistrarCliente(struct Cliente *clientes, int *num_clientes) {
+
+void RegistrarCliente(FILE *arquivo) {
     struct Cliente novo_cliente;
     printf("**Registrar Cliente**\n");
     printf("Codigo: ");
@@ -162,9 +185,8 @@ void RegistrarCliente(struct Cliente *clientes, int *num_clientes) {
     fflush(stdin);
     fgets(novo_cliente.nome_cliente, sizeof(novo_cliente.nome_cliente), stdin);
     novo_cliente.nome_cliente[strcspn(novo_cliente.nome_cliente, "\n")] = '\0';
-
-    clientes[*num_clientes] = novo_cliente; 
-    (*num_clientes)++; 
+    
+    escrever_cliente(novo_cliente, arquivo);
 }
 
 struct RelatorioVenda* buscarRelatorioPorCodigo(struct RelatorioVenda* relatorios, int codigo) {
@@ -228,11 +250,51 @@ void identificarItensMaisEMenosVendidos(struct Venda* vendas) {
     printf("Item menos vendido: %d (vendido %d vezes)\n", menos_vendido.codigo_venda, menos_vendido.count);
 }
 
-void gerar_relatorio(struct Venda *vendas, int num_vendas, int num_clientes) {
+void ler_vendas(struct Venda** vendas, int* num_vendas, FILE *arquivo) {
+    struct Venda venda;
+
+    // Contar o número de registros no arquivo
+    fseek(arquivo, 0, SEEK_END);
+    *num_vendas = ftell(arquivo) / sizeof(struct Venda);
+    rewind(arquivo);
+
+    *vendas = (struct Venda*)malloc((*num_vendas) * sizeof(struct Venda));
+    if (*vendas == NULL) {
+        printf("Erro ao alocar memória.\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < *num_vendas; i++) {
+        fread(&venda, sizeof(struct Venda), 1, arquivo);
+        (*vendas)[i] = venda;
+    }
+}
+
+int ler_quantidade_clientes(FILE *arquivo) {
+    struct Cliente cliente;
+    int count = 0;
+
+    while (fread(&cliente, sizeof(struct Cliente), 1, arquivo) == 1) {
+        // Verificar se o código do cliente é válido
+        if (cliente.codigo != 0) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+void gerar_relatorio(FILE *arquivo_vendas, FILE* arquivo_clientes) {
+    struct Venda* vendas;
+    int num_vendas = 0;
+    int num_clientes = ler_quantidade_clientes(arquivo_clientes);
+
+    ler_vendas(&vendas, &num_vendas, arquivo_vendas);
+
     printf("\nRelatório de Vendas:\n\n");
 
     printf("%-10s%-30s%-20s%-15s%-15s%-15s\n",
-           "Código", "Nome do Produto", "Marca", "Qtd. Itens", "Preço (U)", "Valor Total Venda");
+        "Código", "Nome do Produto", "Marca", "Qtd. Itens", "Preço (U)", "Valor Total Venda");
 
     float faturamento_bruto = 0.0;
 
@@ -240,8 +302,7 @@ void gerar_relatorio(struct Venda *vendas, int num_vendas, int num_clientes) {
         struct Venda venda = vendas[i];
         float preco_total_com_desconto = calcular_preco_total_com_desconto(venda);
         faturamento_bruto += preco_total_com_desconto;
-        printf("%-10d%-30s%-20s%-15d%-15d%-15.2f\n",
-               venda.codigo, venda.nome_produto, venda.marca, venda.qtd_itens, venda.preco_unitario, preco_total_com_desconto);
+        printf("%-10d%-30s%-20s%-15d%-15d%-15.2f\n", venda.codigo, venda.nome_produto, venda.marca, venda.qtd_itens, venda.preco_unitario, preco_total_com_desconto);
     }
 
     printf("\nTotal de vendas: %d\n", num_vendas);
@@ -249,6 +310,9 @@ void gerar_relatorio(struct Venda *vendas, int num_vendas, int num_clientes) {
     printf("Faturamento bruto: %.2f\n", faturamento_bruto);
 
     identificarItensMaisEMenosVendidos(vendas);
+
+    // Liberar a memória alocada para o array de vendas
+    free(vendas);
 
     printf("\n\nPressione qualquer tecla para voltar ao menu...\n");
     getchar();
@@ -260,11 +324,21 @@ int main() {
 
     titulo();
 
-    struct Venda vendas[100]; 
-    int num_vendas = 0;
+    FILE *arquivo_vendas;
+    arquivo_vendas = fopen("vendas.bin", "ab+");
 
-    struct Cliente clientes[100]; 
-    int num_clientes = 0;
+    FILE* arquivo_clientes;
+    arquivo_clientes = fopen("clientes.bin", "ab+");
+
+    if (arquivo_vendas == NULL) {
+        perror("Erro ao abrir arquivo vendas.");
+        return 1;
+    }
+
+    if (arquivo_clientes == NULL) {
+        perror("Erro ao abrir arquivo clientes.");
+        return 1;
+    }
 
     enum Operacoes operacoes;
 
@@ -280,19 +354,19 @@ int main() {
         switch (operacoes) {
             case REGISTRAR_VENDA:
                 system("CLS");
-                registrar_Vendas(vendas, clientes, &num_vendas);
+                registrar_Vendas(arquivo_clientes, arquivo_vendas);
                 system("CLS");
                 break;
 
             case CADASTRAR_CLIENTE:
                 system("CLS");
-                RegistrarCliente(clientes, &num_clientes);
+                RegistrarCliente(arquivo_clientes);
                 system("CLS");
                 break;
 
             case GERAR_RELATORIO:
                 system("CLS");
-                gerar_relatorio(vendas, num_vendas, num_clientes);
+                gerar_relatorio(arquivo_vendas, arquivo_clientes);
                 system("CLS");
                 break;
 
@@ -304,6 +378,10 @@ int main() {
                 printf("\nOpção inválida. Escolha novamente.\n");
         }
     } while (operacoes != FINALIZAR);
+
+
+    fclose(arquivo_vendas);
+    fclose(arquivo_clientes);
 
     system("pause");
 
