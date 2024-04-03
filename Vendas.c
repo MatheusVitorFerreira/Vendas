@@ -3,9 +3,6 @@
 #include <locale.h>
 #include <string.h> 
 
-#define ARQUIVO_VENDAS = "vendas.bin"
-#define ARQUIVO_CLIENTES = "clientes.bin"
-
 void titulo();
 
 struct Cliente {
