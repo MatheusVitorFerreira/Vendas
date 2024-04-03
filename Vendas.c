@@ -36,7 +36,6 @@ enum Operacoes {
 void imprimirVenda(struct Venda venda);
 float calcular_preco_total_com_desconto(struct Venda venda);
 void RegistrarCliente(FILE* arquivo);
-<<<<<<< HEAD
 void escrever_venda(struct Venda venda, FILE *arquivo);
 void escrever_cliente(struct Cliente cliente, FILE *arquivo);
 struct Cliente* buscarClientePorCodigo(int codigo, FILE* arquivo_clientes);
@@ -45,8 +44,6 @@ void identificarItensMaisEMenosVendidos(struct Venda* vendas, int num_vendas);
 void ler_vendas(struct Venda** vendas, int* num_vendas, FILE *arquivo);
 int ler_quantidade_clientes(FILE *arquivo);
 void gerar_relatorio(FILE *arquivo_vendas, FILE* arquivo_clientes);
-=======
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
 
 // Função titulo
 void titulo() {
@@ -69,7 +66,6 @@ void escrever_cliente(struct Cliente cliente, FILE *arquivo) {
     fwrite(&cliente, sizeof(struct Cliente), 1, arquivo);
 }
 
-<<<<<<< HEAD
 struct Cliente* buscarClientePorCodigo(int codigo, FILE* arquivo_clientes) {
     struct Cliente* cliente = (struct Cliente*)malloc(sizeof(struct Cliente));
     if (cliente == NULL) {
@@ -86,30 +82,6 @@ struct Cliente* buscarClientePorCodigo(int codigo, FILE* arquivo_clientes) {
         }
     }
     free(cliente);
-=======
-/*struct Cliente* buscarClientePorCodigo(struct Cliente* clientes, int codigo) {
-    int size = sizeof(clientes);
-    for (int i = 0; i < size; i++) {
-        if (clientes[i].codigo == codigo) {
-            return &clientes[i];
-        }
-    }
-    return NULL;
-}*/
-
-struct Cliente* buscarClientePorCodigo(int codigo, FILE* arquivo_vendas) {
-    struct Cliente cliente;
-
-    // Ler cada cliente do arquivo
-    while (fread(&cliente, sizeof(struct Cliente), 1, arquivo_vendas) == 1) {
-        if (cliente.codigo == codigo) {
-            struct Cliente* cliente_encontrado = (struct Cliente*)malloc(sizeof(struct Cliente));
-            *cliente_encontrado = cliente;
-            return cliente_encontrado;
-        }
-    }
-
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
     return NULL;
 }
 
@@ -117,7 +89,6 @@ void registrar_Vendas(FILE* arquivo_clientes, FILE* arquivo_vendas) {
     struct Venda nova_venda;
     struct Cliente *cliente_encontrado;
 
-<<<<<<< HEAD
     do {
         titulo();
         printf("Registrar Venda:\n\n");
@@ -157,34 +128,13 @@ void registrar_Vendas(FILE* arquivo_clientes, FILE* arquivo_vendas) {
     printf("Marca: ");
     fgets(nova_venda.marca, sizeof(nova_venda.marca), stdin);
     nova_venda.marca[strcspn(nova_venda.marca, "\n")] = '\0';
-=======
-    int opcao;
-    struct Cliente *cliente_encontrado;
 
-    do {
-        printf("Registrar Venda:\n\n");
+    printf("Quantidade de Itens: ");
+    scanf("%d", &nova_venda.qtd_itens);
 
-        printf("Codigo do cliente: ");
-        int codigo_cliente;
-        scanf("%d", &codigo_cliente);
+    printf("Preço Unitário: ");
+    scanf("%d", &nova_venda.preco_unitario);
 
-        cliente_encontrado = buscarClientePorCodigo(codigo_cliente, arquivo_clientes);
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
-
-        if (cliente_encontrado == NULL) {
-            printf("Cliente não cadastrado! Escolha uma das opções abaixo:\n\n");
-            printf("1. Fornecer um codigo diferente\n");
-            printf("2. Voltar ao menu\n");
-            printf("Escolha uma opção: ");
-            scanf("%d", &opcao);
-            system("CLS");
-        } else {
-            opcao = 2;
-        }
-
-    } while (opcao != 2);
-
-<<<<<<< HEAD
     nova_venda.preco_total = (float)(nova_venda.qtd_itens * nova_venda.preco_unitario);
     printf("Preço total: %.2f\n\n", nova_venda.preco_total);
     imprimirVenda(nova_venda);
@@ -192,54 +142,13 @@ void registrar_Vendas(FILE* arquivo_clientes, FILE* arquivo_vendas) {
     printf("\n");
     printf("Deseja confirmar a venda? (sim/nao): ");
     scanf("%s", resposta);
-=======
-    if (cliente_encontrado != NULL) {
-        nova_venda.cliente = cliente_encontrado;
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
 
-        printf("Codigo do produto: ");
-        scanf("%d", &nova_venda.codigo);
-
-        printf("Nome: ");
-        getchar(); // Limpa o buffer de entrada
-        fgets(nova_venda.nome_produto, sizeof(nova_venda.nome_produto), stdin);
-        nova_venda.nome_produto[strcspn(nova_venda.nome_produto, "\n")] = '\0'; // Remove o caractere de nova linha, se presente
-
-        printf("Marca: ");
-        fgets(nova_venda.marca, sizeof(nova_venda.marca), stdin);
-        nova_venda.marca[strcspn(nova_venda.marca, "\n")] = '\0'; // Remove o caractere de nova linha, se presente
-
-        printf("Quantidade de Itens: ");
-        scanf("%d", &nova_venda.qtd_itens);
-
-        printf("Preço Unitário: ");
-        scanf("%d", &nova_venda.preco_unitario);
-
-        nova_venda.preco_total = (float)(nova_venda.qtd_itens * nova_venda.preco_unitario);
-        printf("\nPreço total: %.2f\n", nova_venda.preco_total);
-
-        printf("\n");
-        system("CLS");
+    if (strcmp(resposta, "sim") == 0) {
         imprimirVenda(nova_venda);
-<<<<<<< HEAD
         escrever_venda(nova_venda, arquivo_vendas);
         printf("Venda registrada com sucesso!\n");
     } else {
         printf("Venda cancelada. Retornando ao menu.\n");
-=======
-        char resposta[10];
-        printf("Deseja confirmar a venda? (sim/nao): ");
-        scanf("%s", resposta);
-
-        if (strcmp(resposta, "sim") == 0) {
-            imprimirVenda(nova_venda);
-            escrever_venda(nova_venda, arquivo_vendas);
-            printf("Venda registrada com sucesso!\n");
-        }
-        else {
-            printf("Venda cancelada. Retornando ao menu.\n");
-        }
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
     }
 }
 
@@ -275,22 +184,12 @@ void RegistrarCliente(FILE *arquivo) {
     fflush(stdin);
     fgets(novo_cliente.nome_cliente, sizeof(novo_cliente.nome_cliente), stdin);
     novo_cliente.nome_cliente[strcspn(novo_cliente.nome_cliente, "\n")] = '\0';
-<<<<<<< HEAD
 
     escrever_cliente(novo_cliente, arquivo);
 }
 
 struct RelatorioVenda* buscarRelatorioPorCodigo(struct RelatorioVenda* relatorios, int codigo, int num_vendas) {
     for (int i = 0; i < num_vendas; i++) {
-=======
-    
-    escrever_cliente(novo_cliente, arquivo);
-}
-
-struct RelatorioVenda* buscarRelatorioPorCodigo(struct RelatorioVenda* relatorios, int codigo) {
-    int size = sizeof(relatorios);
-    for (int i = 0; i < size; i++) {
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
         if (relatorios[i].codigo_venda == codigo) {
             return &relatorios[i];
         }
@@ -298,7 +197,6 @@ struct RelatorioVenda* buscarRelatorioPorCodigo(struct RelatorioVenda* relatorio
     return NULL;
 }
 
-<<<<<<< HEAD
 void identificarItensMaisEMenosVendidos(struct Venda* vendas, int num_vendas) {
     struct RelatorioVenda relatorios[num_vendas];
 
@@ -313,36 +211,13 @@ void identificarItensMaisEMenosVendidos(struct Venda* vendas, int num_vendas) {
 
         if (relatorio_encontrado == NULL) {
             for (int j = 0; j < num_vendas; j++) {
-=======
-void identificarItensMaisEMenosVendidos(struct Venda* vendas) {
-    struct RelatorioVenda relatorios[100];
-    int size = sizeof(vendas);
-
-    for (int i = 0; i < 100; i++) {
-        relatorios[i].codigo_venda = -1; // Inicializar com um valor inválido
-        relatorios[i].count = 0;
-    }
-
-    for (int i = 0; i < size; i++) {
-        int codigo = vendas[i].codigo;
-        struct RelatorioVenda* relatorio_encontrado = buscarRelatorioPorCodigo(relatorios, codigo);
-
-        if (relatorio_encontrado == NULL) {
-            // Criar um novo relatório se não encontrado
-            for (int j = 0; j < 100; j++) {
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
                 if (relatorios[j].codigo_venda == -1) {
                     relatorios[j].codigo_venda = codigo;
                     relatorios[j].count = 1;
                     break;
                 }
             }
-<<<<<<< HEAD
         } else {
-=======
-        }
-        else {
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
             relatorio_encontrado->count++;
         }
     }
@@ -350,7 +225,6 @@ void identificarItensMaisEMenosVendidos(struct Venda* vendas) {
     struct RelatorioVenda mais_vendido = relatorios[0];
     struct RelatorioVenda menos_vendido = relatorios[0];
 
-<<<<<<< HEAD
     for (int i = 1; i < num_vendas; i++) {
         if (relatorios[i].codigo_venda == -1) {
             break; 
@@ -359,40 +233,16 @@ void identificarItensMaisEMenosVendidos(struct Venda* vendas) {
         if (relatorios[i].count > mais_vendido.count) {
             mais_vendido = relatorios[i];
         }
-=======
-    for (int i = 1; i < 100; i++) {
-        if (relatorios[i].codigo_venda == -1) {
-            break; // Saímos do loop quando encontramos o primeiro relatório inválido
-        }
-
-        // Item mais vendido
-        if (relatorios[i].count > mais_vendido.count) {
-            mais_vendido = relatorios[i];
-        }
-
-        // Item menos vendido
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
         if (relatorios[i].count < menos_vendido.count) {
             menos_vendido = relatorios[i];
         }
     }
 
-<<<<<<< HEAD
     printf("Item mais vendido: %d Codigo -  %d vezes)\n", mais_vendido.codigo_venda, mais_vendido.count);
     printf("Item menos vendido: %d Codigo - %d vezes)\n", menos_vendido.codigo_venda, menos_vendido.count);
 }
 
 void ler_vendas(struct Venda** vendas, int* num_vendas, FILE *arquivo) {
-=======
-    printf("Item mais vendido: %d (vendido %d vezes)\n", mais_vendido.codigo_venda, mais_vendido.count);
-    printf("Item menos vendido: %d (vendido %d vezes)\n", menos_vendido.codigo_venda, menos_vendido.count);
-}
-
-void ler_vendas(struct Venda** vendas, int* num_vendas, FILE *arquivo) {
-    struct Venda venda;
-
-    // Contar o número de registros no arquivo
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
     fseek(arquivo, 0, SEEK_END);
     *num_vendas = ftell(arquivo) / sizeof(struct Venda);
     rewind(arquivo);
@@ -404,12 +254,7 @@ void ler_vendas(struct Venda** vendas, int* num_vendas, FILE *arquivo) {
     }
 
     for (int i = 0; i < *num_vendas; i++) {
-<<<<<<< HEAD
         fread(&((*vendas)[i]), sizeof(struct Venda), 1, arquivo);
-=======
-        fread(&venda, sizeof(struct Venda), 1, arquivo);
-        (*vendas)[i] = venda;
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
     }
 }
 
@@ -418,10 +263,6 @@ int ler_quantidade_clientes(FILE *arquivo) {
     int count = 0;
 
     while (fread(&cliente, sizeof(struct Cliente), 1, arquivo) == 1) {
-<<<<<<< HEAD
-=======
-        // Verificar se o código do cliente é válido
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
         if (cliente.codigo != 0) {
             count++;
         }
@@ -455,11 +296,7 @@ void gerar_relatorio(FILE *arquivo_vendas, FILE* arquivo_clientes) {
     printf("Total clientes que realizaram compras: %d\n", num_clientes);
     printf("Faturamento bruto: %.2f\n", faturamento_bruto);
 
-<<<<<<< HEAD
     identificarItensMaisEMenosVendidos(vendas, num_vendas);
-=======
-    identificarItensMaisEMenosVendidos(vendas);
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
 
     // Liberar a memória alocada para o array de vendas
     free(vendas);
@@ -475,18 +312,9 @@ int main() {
     FILE *arquivo_vendas;
     arquivo_vendas = fopen("vendas.bin", "rb+");
 
-<<<<<<< HEAD
     FILE* arquivo_clientes;
     arquivo_clientes = fopen("clientes.bin", "rb+");
 
-=======
-    FILE *arquivo_vendas;
-    arquivo_vendas = fopen("vendas.bin", "ab+");
-
-    FILE* arquivo_clientes;
-    arquivo_clientes = fopen("clientes.bin", "ab+");
-
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
     if (arquivo_vendas == NULL) {
         perror("Erro ao abrir arquivo vendas.");
         return 1;
@@ -505,11 +333,7 @@ int main() {
         printf("1. Cadastrar nova venda\n");
         printf("2. Cadastrar cliente\n");
         printf("3. Gerar relatórios\n");
-<<<<<<< HEAD
         printf("4. Finalizar venda\n\n");
-=======
-        printf("4. Finalizar venda\n");
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
         printf("Escolha uma opção: ");
         scanf("%u", &operacoes);
 
@@ -541,10 +365,6 @@ int main() {
         }
     } while (operacoes != FINALIZAR);
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 47ecf71ed0e3ed21c06c79ca7fbe65218bc57b1f
     fclose(arquivo_vendas);
     fclose(arquivo_clientes);
 
