@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <string.h>
-#include <unistd.h>
+
 
 // Armazena os dados do Cliente 
 struct Cliente {
@@ -330,7 +330,44 @@ void identificarItensMaisEMenosVendidos(struct Venda *vendas, int num_vendas)
     printf("Item mais vendido:  Nome %s - Código %d - %d itens\n", mais_vendido_nome, mais_vendido_codigo, mais_vendido_qtd);
     printf("Item menos vendido: Nome %s - Código %d - %d itens\n", menos_vendido_nome, menos_vendido_codigo, menos_vendido_qtd);
 }
+int contador_clientesVendas(FILE *arquivo_vendas, FILE *arquivo_clientes)
+{
+    rewind(arquivo_clientes); 
+    int contador_vendas_por_cliente[100] = {0}; 
 
+    int codigo_cliente_mais_vendas = -1;
+    int max_vendas = -1;
+
+    struct Cliente cliente;
+
+    // Iterar sobre os registros de clientes
+    while (fscanf(arquivo_clientes, "%d;%[^\n]\n", &cliente.codigo, cliente.nome_cliente) == 2)
+    {
+        // Contar o número de vendas para o cliente atual
+        rewind(arquivo_vendas); // Voltar para o início do arquivo de vendas
+        struct Venda venda;
+        while (fscanf(arquivo_vendas, "%d;%[^;];%[^;];%d;%d;%f;%f\n", &venda.codigo, venda.nome_produto, venda.marca, &venda.qtd_itens, &venda.preco_unitario, &venda.preco_total, &venda.desconto) == 7)
+        {
+            if (venda.codigo == cliente.codigo)
+            {
+                contador_vendas_por_cliente[cliente.codigo]++;
+            }
+        }
+        if (contador_vendas_por_cliente[cliente.codigo] > max_vendas)
+        {
+            max_vendas = contador_vendas_por_cliente[cliente.codigo];
+            codigo_cliente_mais_vendas = cliente.codigo;
+        }
+    }
+    int total_clientes_compras = 0;
+    for (int i = 1; i <= 100; i++)
+    {
+        if (contador_vendas_por_cliente[i] > 0)
+        {
+         total_clientes_compras++;
+        }
+    }
+}
 //Comparar dados de uma venda e utilizaram o valor total como parametro para ordenar
 int compararValorTotalVenda(const void *a, const void *b)
 {   
@@ -374,7 +411,7 @@ void gerar_relatorio(FILE *arquivo_vendas, FILE *arquivo_clientes)
     }
 
     printf("\nTotal de vendas: %d\n", num_vendas);
-    printf("Total clientes que realizaram compras: %d\n", num_clientes);
+    printf("Total clientes que realizaram compras: %d\n", contador_clientesVendas(arquivo_vendas, arquivo_clientes));
     printf("Faturamento bruto: %.2f\n", faturamento_bruto);
 
     identificarItensMaisEMenosVendidos(vendas, num_vendas);
@@ -388,7 +425,7 @@ void gerar_relatorio(FILE *arquivo_vendas, FILE *arquivo_clientes)
 
 int main()
 {
-    setlocale(LC_ALL, "Portuguese");
+    setlocale(LC_ALL, "pt_BR");
 
     FILE *arquivo_vendas;
     arquivo_vendas = fopen("vendas.dat", "a+");
