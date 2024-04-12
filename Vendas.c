@@ -2,12 +2,7 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <string.h>
-
-#ifdef _WIN32
-#include <Windows.h>
-#else
 #include <unistd.h>
-#endif
 
 // Armazena os dados do Cliente 
 struct Cliente {
@@ -189,22 +184,12 @@ void registrar_Vendas(FILE* arquivo_clientes, FILE* arquivo_vendas)
         imprimirVenda(nova_venda);
         escrever_venda(nova_venda, arquivo_vendas);
         printf("Venda registrada com sucesso!\n");
-
-        #ifdef _WIN32
-            Sleep(2000);
-        #else
-            sleep(2);
-        #endif
+        sleep(2);
     }
     else
     {
         printf("Venda cancelada. Retornando ao menu.\n");
-
-        #ifdef _WIN32
-            Sleep(2000);
-        #else
-            sleep(2);
-        #endif
+        sleep(2);
     }
 }
 
@@ -240,7 +225,7 @@ float calcular_preco_total_com_desconto(struct Venda venda)
 void RegistrarCliente(FILE* arquivo)
 {
     struct Cliente novo_cliente;
-    printf("** \tRegistrar Cliente\t**\n");
+    printf("* \tRegistrar Cliente\t*\n");
     printf("\n\nCodigo: ");
     scanf("%d", &novo_cliente.codigo);
 
@@ -487,11 +472,7 @@ int main()
 
         default:
             printf("Opção inválida. Tente novamente.\n");
-            #ifdef _WIN32
-                Sleep(2000);
-            #else
-                sleep(2);
-            #endif
+            sleep(2);
             system("CLS");
             break;
         }
