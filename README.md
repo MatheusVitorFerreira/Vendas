@@ -15,7 +15,7 @@ Tarefas para o programa de vendas em C:
     - Criar um array de structs Venda para armazenar todas as vendas do dia.
 2. Structs:
    - Relatorio de Venda
-   - MapaQuantidade
+   - Mapa de Quantidade
    - Venda
    - Data
 4. Funções:
