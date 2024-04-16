@@ -13,8 +13,12 @@ Tarefas para o programa de vendas em C:
     - Preço total da venda (calculado automaticamente)
     - Desconto (calculado automaticamente)
     - Criar um array de structs Venda para armazenar todas as vendas do dia.
-
-2. Funções:
+2. Structs:
+   - Relatorio de Venda
+   - MapaQuantidade
+   - Venda
+   - Data
+4. Funções:
     - Função para registrar uma nova venda:
     - Ler os dados da venda do usuário.
     - Calcular o preço total da venda.
@@ -31,11 +35,21 @@ Tarefas para o programa de vendas em C:
     - Calcular a quantidade de clientes que realizaram compras.
     - Encontrar o item mais vendido e o item menos vendido.
     - Imprimir os relatórios na tela.
+    - Consultar por data.
+    - Ler vendas.
+    - Escrever vendas.
+    - Escrever clientes.
+    - Identifivar Item mais vendido e menos vendido.
+    - Contador de clientes.
+    - Comparar Valor total venda.
+    - Imprimir venda.
+    - gerar codigo.
 
-4. Modularização:
+5. Modularização:
 
     - Dividir o programa em módulos separados para cada funcionalidade:
     - Módulo para registrar vendas.
+    - Módulo para registrar clientes.
     - Módulo para calcular preços.
     - Módulo para gerar relatórios.
 
