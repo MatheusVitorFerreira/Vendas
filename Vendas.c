@@ -3,7 +3,6 @@
 //  Matheus Vitor Ferreira      RA: 1230204711
 //  Lucas Suares da Silva       RA: 1230105076
 
-//Produtos Cadastrados dia 18/04/2024
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -40,14 +39,6 @@ struct Venda
     struct Data data;
 };
 
-// Armazena o codigo da venda e uma variavel contadora
-struct RelatorioVenda
-{
-    char codigo_venda[6];
-    int count;
-    char nome_produto[100];
-};
-
 // Enum para facilitar o direcionamento no menu
 enum Operacoes
 {
@@ -73,7 +64,7 @@ void escrever_venda(struct Venda venda, FILE *arquivo);
 void escrever_cliente(struct Cliente cliente, FILE *arquivo);
 struct Cliente *buscarClientePorCodigo(int codigo, FILE *arquivo_clientes);
 void registrar_Vendas(FILE *arquivo_clientes, FILE *arquivo_vendas);
-void identificarItensMaisEMenosVendidos(FILE *arquivo_vendas);
+void identificarItensMaisEMenosVendidos(FILE *arquivo_vendas, struct Data data);
 void ler_vendas(struct Venda **vendas, int *num_vendas, FILE *arquivo, struct Data data);
 void gerar_relatorio(FILE *arquivo_vendas);
 int compararValorTotalVenda(const void *a, const void *b);
@@ -181,6 +172,9 @@ void registrar_Vendas(FILE *arquivo_clientes, FILE *arquivo_vendas)
         titulo();
         printf("Registrar Venda:\n\n");
 
+        printf("Informe a Data (DD/MM/YYYY): ");
+        scanf("%d/%d/%d", &nova_venda.data.dia, &nova_venda.data.mes, &nova_venda.data.ano);
+
         printf("Codigo do cliente: ");
         int codigo_cliente;
         scanf("%d", &codigo_cliente);
@@ -197,7 +191,7 @@ void registrar_Vendas(FILE *arquivo_clientes, FILE *arquivo_vendas)
             int opcao;
             scanf("%d", &opcao);
             if (opcao == 2)
-            {  
+            {
                 printf("cls");
                 return;
             }
@@ -210,9 +204,6 @@ void registrar_Vendas(FILE *arquivo_clientes, FILE *arquivo_vendas)
     } while (1);
 
     nova_venda.codigo_cliente = cliente_encontrado->codigo;
-
-    printf("Informe a Data (DD/MM/YYYY): ");
-    scanf("%d/%d/%d", &nova_venda.data.dia, &nova_venda.data.mes, &nova_venda.data.ano);
 
     printf("Nome do Produto: ");
     getchar();
@@ -248,6 +239,7 @@ void registrar_Vendas(FILE *arquivo_clientes, FILE *arquivo_vendas)
     if (strcmp(resposta, "sim") == 0)
     {
         escrever_venda(nova_venda, arquivo_vendas);
+        printf("Venda registrada com sucesso!\n");
         sleep(2);
     }
     else
@@ -258,7 +250,6 @@ void registrar_Vendas(FILE *arquivo_clientes, FILE *arquivo_vendas)
 }
 // Função para imprimir todos os dados da venda
 void imprimirVenda(struct Venda venda)
-
 {
     printf("\n");
     printf("Data informada: %02d/%02d/%04d\n", venda.data.dia, venda.data.mes, venda.data.ano);
@@ -271,6 +262,14 @@ void imprimirVenda(struct Venda venda)
     printf("Preço Total com Desconto: R$ %.2f\n", calcular_preco_total_com_desconto(venda)); // Use o preço total com desconto
     printf("Desconto: %.2f\n", venda.desconto);
 }
+
+void imprimirCliente(struct Cliente cliente)
+{
+    printf("\n");
+    printf("Codigo do cliente: %d\n", cliente.codigo);
+    printf("Nome do cliente: %s\n", cliente.nome_cliente);
+}
+
 // Função para calcular o desconto com restrição de apenas para itens com quantidades acima ou igual a 3
 float calcular_preco_total_com_desconto(struct Venda venda)
 {
@@ -283,13 +282,16 @@ float calcular_preco_total_com_desconto(struct Venda venda)
 
     return preco_total;
 }
-//Verifica se tem algum cliente com codigo inserido
-int verificarCodigoClienteExistente(int codigo, FILE *arquivo_clientes) {
+// Verifica se tem algum cliente com codigo inserido
+int verificarCodigoClienteExistente(int codigo, FILE *arquivo_clientes)
+{
     rewind(arquivo_clientes); // Voltar ao início do arquivo
 
     struct Cliente cliente;
-    while (fscanf(arquivo_clientes, "%d;%[^\n]\n", &cliente.codigo, cliente.nome_cliente) == 2) {
-        if (cliente.codigo == codigo) {
+    while (fscanf(arquivo_clientes, "%d;%[^\n]\n", &cliente.codigo, cliente.nome_cliente) == 2)
+    {
+        if (cliente.codigo == codigo)
+        {
             // Cliente com o mesmo código encontrado
             return 1;
         }
@@ -301,7 +303,8 @@ int verificarCodigoClienteExistente(int codigo, FILE *arquivo_clientes) {
 // Função para registrar um cliente
 // strcspn tem como objetivo eliminar o caractere de nova linha (\n)
 // escrever_cliente é uma função feita anteriormente para passar os dados para o arquivo.dat
-void RegistrarCliente(FILE *arquivo) {
+void RegistrarCliente(FILE *arquivo)
+{
     struct Cliente novo_cliente;
     printf("\n");
     printf(" Registrar Cliente\n");
@@ -310,10 +313,11 @@ void RegistrarCliente(FILE *arquivo) {
     scanf("%d", &novo_cliente.codigo);
 
     // Verificar se o código do cliente já existe
-    if (verificarCodigoClienteExistente(novo_cliente.codigo, arquivo)) {
-        printf("\n>>>>> Cliente com o mesmo código já existe. Tente novamente!!<<<<<<<<<<\n");
+    if (verificarCodigoClienteExistente(novo_cliente.codigo, arquivo))
+    {
+        printf("\n>>>>>  Cliente com o mesmo código já existe. Tente novamente!!  <<<<<<<<<<\n");
         sleep(3);
-        return; 
+        return;
     }
 
     printf("Nome do cliente: ");
@@ -321,7 +325,24 @@ void RegistrarCliente(FILE *arquivo) {
     fgets(novo_cliente.nome_cliente, sizeof(novo_cliente.nome_cliente), stdin);
     novo_cliente.nome_cliente[strcspn(novo_cliente.nome_cliente, "\n")] = '\0';
 
-    escrever_cliente(novo_cliente, arquivo);
+    system("cls");
+    imprimirCliente(novo_cliente);
+    char resposta[10];
+    printf("\n");
+    printf("Deseja registrar o cliente? (sim/nao): ");
+    scanf("%s", resposta);
+
+    if (strcmp(resposta, "sim") == 0)
+    {
+        escrever_cliente(novo_cliente, arquivo);
+        printf("Cliente registrado com sucesso!\n");
+        sleep(2);
+    }
+    else
+    {
+        printf("Registro cancelado. Retornando ao menu.\n");
+        sleep(2);
+    }
 }
 
 // A memória para armazenar as vendas é realocada usando realloc
@@ -333,9 +354,9 @@ void ler_vendas(struct Venda **vendas, int *num_vendas, FILE *arquivo, struct Da
     char nome_produto[100];
     char marca[100];
     int qtd_itens;
-    float preco_unitario; 
-    float preco_total;    
-    float desconto;      
+    float preco_unitario;
+    float preco_total;
+    float desconto;
     int codigo_cliente;
     int dia, mes, ano;
 
@@ -387,12 +408,14 @@ void ler_vendas(struct Venda **vendas, int *num_vendas, FILE *arquivo, struct Da
         }
     }
 }
-void identificarItensMaisEMenosVendidos(FILE *arquivo_vendas) {
+void identificarItensMaisEMenosVendidos(FILE *arquivo_vendas, struct Data data)
+{
     struct MapaQuantidade mapa_quantidade[MAX_PRODUTOS];
     int num_produtos = 0;
 
     // Inicializar mapa_quantidade
-    for (int i = 0; i < MAX_PRODUTOS; i++) {
+    for (int i = 0; i < MAX_PRODUTOS; i++)
+    {
         strcpy(mapa_quantidade[i].codigo_produto, "");
         strcpy(mapa_quantidade[i].nome_produto, "");
         mapa_quantidade[i].quantidade_vendida = 0;
@@ -407,19 +430,26 @@ void identificarItensMaisEMenosVendidos(FILE *arquivo_vendas) {
                   &venda.preco_total, &venda.desconto,
                   &venda.codigo_cliente, &venda.data.dia, &venda.data.mes, &venda.data.ano) == 11)
     {
-        int encontrado = 0;
-        for (int i = 0; i < num_produtos; i++) {
-            if (strcmp(mapa_quantidade[i].codigo_produto, venda.codigo_venda) == 0) {
-                mapa_quantidade[i].quantidade_vendida += venda.qtd_itens;
-                encontrado = 1;
-                break;
+        // Verifica se a venda ocorreu na data especificada
+        if (venda.data.dia == data.dia && venda.data.mes == data.mes && venda.data.ano == data.ano)
+        {
+            int encontrado = 0;
+            for (int i = 0; i < num_produtos; i++)
+            {
+                if (strcmp(mapa_quantidade[i].nome_produto, venda.nome_produto) == 0)
+                {
+                    mapa_quantidade[i].quantidade_vendida += venda.qtd_itens;
+                    encontrado = 1;
+                    break;
+                }
             }
-        }
-        if (!encontrado && num_produtos < MAX_PRODUTOS) {
-            strcpy(mapa_quantidade[num_produtos].codigo_produto, venda.codigo_venda);
-            strcpy(mapa_quantidade[num_produtos].nome_produto, venda.nome_produto);
-            mapa_quantidade[num_produtos].quantidade_vendida = venda.qtd_itens;
-            num_produtos++;
+            if (!encontrado && num_produtos < MAX_PRODUTOS)
+            {
+                strcpy(mapa_quantidade[num_produtos].codigo_produto, venda.codigo_venda);
+                strcpy(mapa_quantidade[num_produtos].nome_produto, venda.nome_produto);
+                mapa_quantidade[num_produtos].quantidade_vendida = venda.qtd_itens;
+                num_produtos++;
+            }
         }
     }
 
@@ -427,32 +457,38 @@ void identificarItensMaisEMenosVendidos(FILE *arquivo_vendas) {
     int max_vendas = mapa_quantidade[0].quantidade_vendida;
     int min_vendas = mapa_quantidade[0].quantidade_vendida;
 
-    for (int i = 1; i < num_produtos; i++) {
-        if (mapa_quantidade[i].quantidade_vendida > max_vendas) {
+    for (int i = 1; i < num_produtos; i++)
+    {
+        if (mapa_quantidade[i].quantidade_vendida > max_vendas)
+        {
             max_vendas = mapa_quantidade[i].quantidade_vendida;
         }
-        if (mapa_quantidade[i].quantidade_vendida < min_vendas) {
+        if (mapa_quantidade[i].quantidade_vendida < min_vendas)
+        {
             min_vendas = mapa_quantidade[i].quantidade_vendida;
         }
     }
 
     // Mostrar todos os itens mais vendidos
-    printf("\nItens mais vendidos:\n");
-    for (int i = 0; i < num_produtos; i++) {
-        if (mapa_quantidade[i].quantidade_vendida == max_vendas) {
-            printf("Código: %s - Nome: %s - %d itens\n", mapa_quantidade[i].codigo_produto, mapa_quantidade[i].nome_produto, max_vendas);
+    printf("\nItens mais vendidos na data %02d/%02d/%04d:\n", data.dia, data.mes, data.ano);
+    for (int i = 0; i < num_produtos; i++)
+    {
+        if (mapa_quantidade[i].quantidade_vendida == max_vendas)
+        {
+            printf("Nome: %s - %d itens\n", mapa_quantidade[i].nome_produto, max_vendas);
         }
     }
 
     // Mostrar todos os itens menos vendidos
-    printf("\nItens menos vendidos:\n");
-    for (int i = 0; i < num_produtos; i++) {
-        if (mapa_quantidade[i].quantidade_vendida == min_vendas) {
-            printf("Código: %s - Nome: %s - %d itens\n", mapa_quantidade[i].codigo_produto, mapa_quantidade[i].nome_produto, min_vendas);
+    printf("\nItens menos vendidos na data %02d/%02d/%04d:\n", data.dia, data.mes, data.ano);
+    for (int i = 0; i < num_produtos; i++)
+    {
+        if (mapa_quantidade[i].quantidade_vendida == min_vendas)
+        {
+            printf("Nome: %s - %d itens\n", mapa_quantidade[i].nome_produto, min_vendas);
         }
     }
 }
-
 int contador_clientesVendas(FILE *arquivo_vendas, struct Data data)
 {
     rewind(arquivo_vendas);                     // Voltar para o início do arquivo de vendas
@@ -509,7 +545,8 @@ void gerar_relatorio(FILE *arquivo_vendas)
     system("cls");
     ler_vendas(&vendas, &num_vendas, arquivo_vendas, data);
     if (num_vendas == 0)
-    {   printf("\n");
+    {
+        printf("\n");
         printf("\n=>   RELATÓRIO DIÁRIO DE VENDAS   <=\n\n");
         printf("Nenhuma venda registrada para a data especificada.\n");
         printf("\n\nPressione qualquer tecla para voltar ao menu...\n");
@@ -518,39 +555,38 @@ void gerar_relatorio(FILE *arquivo_vendas)
     }
     qsort(vendas, num_vendas, sizeof(struct Venda), compararValorTotal);
     printf("\n=>   RELATÓRIO DIÁRIO DE VENDAS   <=\n\n");
-    printf("\n =>Data Selecionada: %02d/%02d/%04d <=\n\n",data.dia,data.mes,data.ano);
+    printf("\n => Data Selecionada: %02d/%02d/%04d <=\n\n", data.dia, data.mes, data.ano);
     printf("| %-6s | %-15s | %-15s | %-8s | %-6s | %-10s | %-10s | %-6s |\n",
-            "Código", "Produto", "Marca", "Qtd. Itens", "Cód. Cliente", "Preço Unitário", "Desconto", "Preço final");
+           "Código", "Produto", "Marca", "Qtd. Itens", "Cód. Cliente", "Preço Unitário", "Desconto", "Preço final");
     printf("----------------------------------------------------------------------------------------------------------------------\n");
 
     float faturamento_bruto = 0.0;
     float faturamento_descontos = 0.0;
 
-for (int i = 0; i < num_vendas; i++)
-{
-    struct Venda venda = vendas[i];
-    float preco_total_com_desconto = calcular_preco_total_com_desconto(venda);
-    float desconto = venda.preco_total - preco_total_com_desconto;
-    faturamento_bruto += venda.preco_total;
-    faturamento_descontos += desconto;
+    for (int i = 0; i < num_vendas; i++)
+    {
+        struct Venda venda = vendas[i];
+        float preco_total_com_desconto = calcular_preco_total_com_desconto(venda);
+        float desconto = venda.preco_total - preco_total_com_desconto;
+        faturamento_bruto += venda.preco_total;
 
-    printf("| %-6s | %-15s | %-15s | %-10d | %-12d |R$ %-12.2f |R$ %-8.2f | RS %-8.2f |\n",
-           venda.codigo_venda, venda.nome_produto, venda.marca,
-           venda.qtd_itens, venda.codigo_cliente, venda.preco_unitario, desconto, preco_total_com_desconto);
-}
+        printf("| %-6s | %-15s | %-15s | %-10d | %-12d |R$ %-12.2f |R$ %-8.2f | RS %-8.2f |\n",
+               venda.codigo_venda, venda.nome_produto, venda.marca,
+               venda.qtd_itens, venda.codigo_cliente, venda.preco_unitario, desconto, preco_total_com_desconto);
+    }
 
     printf("\nTotal de vendas: %d\n", num_vendas);
     printf("Total de clientes que realizaram compras: %d\n", contador_clientesVendas(arquivo_vendas, data));
     printf("Faturamento bruto: R$ %.2f\n", faturamento_bruto);
-    printf("Faturamento com descontos: R$ %.2f\n", faturamento_descontos);
 
-    identificarItensMaisEMenosVendidos(arquivo_vendas);
+    identificarItensMaisEMenosVendidos(arquivo_vendas, data);
 
     free(vendas);
 
     printf("\n\nPressione qualquer tecla para voltar ao menu...\n");
     getchar();
 }
+
 int main()
 {
     setlocale(LC_ALL, "pt_BR.UTF-8");
